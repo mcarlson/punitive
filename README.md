@@ -1,6 +1,6 @@
 ## PUNitive
 
-A node.js app to find unexpected puns based on their phonetic representation, or sound. It uses [Wiktionary](https://en.wiktionary.org/wiki/Wiktionary:Main_Page) dump files as the corpus and [Double Metaphone](http://en.wikipedia.org/wiki/Metaphone#Double_Metaphone) for phonetic matching.
+A node.js app to find unexpected puns based on their phonetic representation, or sound. It uses [Wiktionary](https://en.wiktionary.org/wiki/Wiktionary:Main_Page) dump files for its corpus and [Double Metaphone](http://en.wikipedia.org/wiki/Metaphone#Double_Metaphone) for phonetic matching.
 
 ### Prerequisites
 
@@ -28,6 +28,7 @@ Run punitive.js, then type words interactively at the prompt:
 
 ### Future directions
 
+* Compress the index
 * Add a web front-end
 * Use stemming to remove conceptual duplicates
 * Show Wiktionary definitions
