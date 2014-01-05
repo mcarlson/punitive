@@ -1,0 +1,13 @@
+{
+  "name": "PUNitive",
+  "version": "0.0.1",
+  "description": "A pun generator",
+  "node-main": "server.js",
+  "dependencies": {
+    "natural": "0.1.25",
+    "underscore": "1.5.2",
+    "event-stream": "3.0.20",
+    "rimraf": "2.2.5"
+  },
+  "engine": "node >= 0.10.0"
+}
