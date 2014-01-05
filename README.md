@@ -16,7 +16,7 @@ Download a dump of all wiktionary articles in english, e.g. http://dumps.wikimed
 
     wget http://dumps.wikimedia.org/enwiktionary/latest/enwiktionary-latest-pages-articles.xml.bz2
 
-Next, index it. This will take a while:
+Next, index it. This will take a while, and it uses about a gigabyte of disk space:
 
     bzip2 -dc enwiktionary-latest-pages-articles.xml.bz2 | node indexer.js
 
@@ -32,5 +32,6 @@ Run punitive.js, then type words interactively at the prompt:
 * Add a web front-end
 * Use stemming to remove conceptual duplicates
 * Show Wiktionary definitions
+* Match similar sounds, e.g. M and N
 * Match based on Wiktionary prununciations
 * Add in rhyming words by following Wiktionary links
