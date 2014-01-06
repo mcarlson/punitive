@@ -16,7 +16,7 @@ Download a dump of all wiktionary articles in english, e.g. http://dumps.wikimed
 
     wget http://dumps.wikimedia.org/enwiktionary/latest/enwiktionary-latest-pages-articles.xml.bz2
 
-Next, index it. This will take a while, and it uses about a gigabyte of disk space:
+Next, index it. This will take a while. It writes a ton of tiny files, which can take up a fair bit of disk space:
 
     bzip2 -dc enwiktionary-latest-pages-articles.xml.bz2 | node indexer.js
 
