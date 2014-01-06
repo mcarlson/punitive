@@ -94,11 +94,10 @@ function findPuns(searchstr, maincallback) {
       if (result == null) {
         callback();
       } else {
-        callback(null, result);
+        callback(null, key);
       }
     }),
     es.map(function (key, callback) {
-      console.log('getting data for key', key);
       db.get(key, function(err, data) {
         callback(null, data);
       });
