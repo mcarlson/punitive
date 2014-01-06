@@ -48,6 +48,12 @@ function subsound(source, sound, replacement) {
   }
 }
 
+function getWords(phoneme, callback) {
+  db.get(phoneme, function(err, data) {
+    callback(null, data);
+  });
+}
+
 function processWords(words, searchstr, phonetic) {
   return _.chain(words).flatten().uniq()
   .filter(function(word) {
@@ -81,29 +87,29 @@ function processWords(words, searchstr, phonetic) {
     if (result.toLowerCase() === searchstr.toLowerCase()) return;
     return word;
   }).value();
-
 }
 
 function findPuns(searchstr, maincallback) {
-  var phonetic = dm.process(searchstr)[0];
+  var phoneme = dm.process(searchstr)[0];
   es.pipeline(
     // db.createKeyStream(),
     es.readArray(phonemes),
     es.map(function (key, callback) {
-      var result = key.match(phonetic);
+      var result = key.match(phoneme);
       if (result == null) {
         callback();
       } else {
+        // console.log('found key', key, result);
         callback(null, key);
       }
     }),
     es.map(function (key, callback) {
-      db.get(key, function(err, data) {
-        callback(null, data);
-      });
+      // console.log('getting data for key', key);
+      getWords(key, callback);
     }),
     es.writeArray(function (err, array){
-      var result = processWords(array, searchstr, phonetic);
+      // console.log('final array', array);
+      var result = processWords(array, searchstr, phoneme);
       maincallback(result);
     })
   );
