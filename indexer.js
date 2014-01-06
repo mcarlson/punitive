@@ -6,8 +6,7 @@ var path = 'index.db';
 
 var rmdir = require('rimraf');
 rmdir.sync(path);
-rmdir.sync('index/');
-fs.mkdirSync('index/');
+fs.mkdirSync(path);
 
 var levelup = require('level');
 var db = levelup(path, {valueEncoding: 'json'});
