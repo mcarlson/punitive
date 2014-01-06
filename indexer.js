@@ -9,6 +9,7 @@ rmdir.sync(path);
 fs.mkdirSync(path);
 
 var phonemes = {};
+var wordcounter = 0;
 
 var titlere = /<title>(.*)<\/title>/;
 
@@ -21,13 +22,14 @@ es.pipeline(
     var match = data.match(titlere);
     if (match) {
       var word = match[1];
-      phones = dm.process(match[1])[0];
+      phoneme = dm.process(match[1])[0];
       // If a phoneme was found, it wasn't a 'special' wiktionary page, and it has an English definition...
-      if (phones && (! word.match(/:/)) && data.match('==English==')) {
+      if (phoneme && (! word.match(/:/)) && data.match('==English==')) {
         // Add it to the list of phonemes found
-        phonemes[phones] = true;
+        phonemes[phoneme] = true;
         // append the word to the list, by phoneme
         fs.appendFileSync(path + phones, word + '\n');
+        wordcounter++;
       }
     }
     callback();
@@ -40,10 +42,9 @@ process.on('SIGINT', function() {
 });
 
 process.on('exit', function() {
-  console.log(Object.keys(phonemes).length + ' phonemes found');
+  var result = Object.keys(phonemes);
+  console.log(result.length + ' phonemes found for ' + wordcounter + ' words.');
 
   // write the index list to disk for use by punitive.jj
-  fs.writeFileSync("phonemes.json", JSON.stringify(Object.keys(phonemes).sort()));
+  fs.writeFileSync("phonemes.json", JSON.stringify(result.sort()));
 });
-
-
