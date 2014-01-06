@@ -2,12 +2,25 @@ var natural = require('natural'),
   dm = natural.DoubleMetaphone;
 
 var fs = require('fs');
-var path = 'index/';
+var path = 'index.db';
+
+var levelup = require('level');
+var db = levelup(path, {valueEncoding: 'json'});
 
 var es = require('event-stream');
+var phonemes = JSON.parse(fs.readFileSync('phonemes.json', 'utf8'));
+
+// var phonemes;
+// es.pipeline(
+//   db.createKeyStream(),
+//   es.writeArray(function (err, array){
+//     console.log('done', array.length);
+//     phonemes = array;
+//   })
+// );
+
 var _ = require('underscore');
 
-var phonemes = JSON.parse(fs.readFileSync('phonemes.json', 'utf8'));
 // var words = fs.readFileSync('/usr/share/dict/words', 'utf8').toString();
 
 // find the portion of a source string that matches a phonetic sound and replace it. Returns null if a match wasn't found
@@ -35,22 +48,13 @@ function subsound(source, sound, replacement) {
   }
 }
 
-function findPuns(searchstr) {
-  var phonetic = dm.process(searchstr)[0];
-  return _.chain(phonemes).filter(function(element) {
-    // Find results with a partial phonetic match
-    return element.match(phonetic);
-  }).map(function(element) {
-    // Read in words for matches
-    try {
-      return fs.readFileSync(path + element, 'utf8').toString().split('\n');
-    } catch (e) {
-    }
-  }).flatten().filter(function(word) {
+function processWords(words, searchstr, phonetic) {
+  return _.chain(words).flatten().uniq()
+  .filter(function(word) {
     // skip short words
     if (word.length < 4) return;
     return word;
-  }).uniq().sortBy(function (word) {
+  }).sortBy(function (word) {
     // Sort alphabetically
     return word.toLowerCase();
   }).sortBy(function (word) {
@@ -77,6 +81,33 @@ function findPuns(searchstr) {
     if (result.toLowerCase() === searchstr.toLowerCase()) return;
     return word;
   }).value();
+
+}
+
+function findPuns(searchstr, maincallback) {
+  var phonetic = dm.process(searchstr)[0];
+  es.pipeline(
+    // db.createKeyStream(),
+    es.readArray(phonemes),
+    es.map(function (key, callback) {
+      var result = key.match(phonetic);
+      if (result == null) {
+        callback();
+      } else {
+        callback(null, result);
+      }
+    }),
+    es.map(function (key, callback) {
+      console.log('getting data for key', key);
+      db.get(key, function(err, data) {
+        callback(null, data);
+      });
+    }),
+    es.writeArray(function (err, array){
+      var result = processWords(array, searchstr, phonetic);
+      maincallback(result);
+    })
+  );
 }
 
 process.stdout.write("Type a word to find puns\n> ");
@@ -84,9 +115,12 @@ es.pipeline(
   process.openStdin(),
   es.split(),
   es.map(function (searchstr, callback) {
-    console.log('Looking for phonetic string ' + dm.process(searchstr)[0]);
-    // write the result, appending a prompt
-    callback(null, findPuns(searchstr).join('\n') + '\n> ');
+    console.log('Looking for phonetic string ' + dm.process(searchstr)[0] + '...');
+    findPuns(searchstr, function (result) {
+      console.log('Found ' + result.length + ' matches');
+      // write the result, appending a prompt
+      callback(null, result.join('\n') + '\n> ');
+    });
   }),
   process.stdout
 );

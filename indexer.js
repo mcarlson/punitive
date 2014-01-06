@@ -2,11 +2,15 @@ var natural = require('natural'),
   dm = natural.DoubleMetaphone;
 
 var fs = require('fs');
-var path = 'index/';
+var path = 'index.db';
 
 var rmdir = require('rimraf');
 rmdir.sync(path);
-fs.mkdirSync(path);
+rmdir.sync('index/');
+fs.mkdirSync('index/');
+
+var levelup = require('level');
+var db = levelup(path, {valueEncoding: 'json'});
 
 var phonemes = {};
 var wordcounter = 0;
@@ -28,7 +32,15 @@ es.pipeline(
         // Add it to the list of phonemes found
         phonemes[phoneme] = true;
         // append the word to the list, by phoneme
-        fs.appendFileSync(path + phones, word + '\n');
+        var phon = phoneme;
+        db.get(phon, function(err, val) {
+          if (val) {
+            val.push(word);
+          } else {
+            val = [word];
+          }
+          db.put(phon, val);
+        });
         wordcounter++;
       }
     }
