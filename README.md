@@ -28,7 +28,7 @@ Run punitive.js, then type words interactively at the prompt:
 
 ### Future directions
 
-* Compress the index
+* Compress the index (see https://github.com/mcarlson/punitive/tree/leveldb for an implementation using leveldb)
 * Add a web front-end
 * Use stemming to remove conceptual duplicates
 * Show Wiktionary definitions
