@@ -82,7 +82,7 @@ function findPuns(searchstr, maincallback) {
       // console.log('getting data for key', key);
       fs.readFile(path + key, 'utf8', function(err, data) {
         if (err) {
-          callback();
+          process.nextTick(callback);
           return;
         }
         // console.log('got data for key', key, data)
