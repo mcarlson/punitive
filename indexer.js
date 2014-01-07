@@ -28,7 +28,7 @@ es.pipeline(
         // Add it to the list of phonemes found
         phonemes[phoneme] = true;
         // append the word to the list, by phoneme
-        fs.appendFileSync(path + phoneme, word + '\n');
+        fs.appendFileSync(path + phones, word + '\n');
         wordcounter++;
       }
     }
