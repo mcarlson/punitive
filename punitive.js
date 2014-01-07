@@ -35,13 +35,22 @@ function subsound(source, sound, replacement) {
   }
 }
 
-function processWords(words, searchstr, phonetic) {
-  return _.chain(words).flatten().uniq()
-  .filter(function(word) {
+function findPuns(searchstr) {
+  var phonetic = dm.process(searchstr)[0];
+  return _.chain(phonemes).filter(function(element) {
+    // Find results with a partial phonetic match
+    return element.match(phonetic);
+  }).map(function(element) {
+    // Read in words for matches
+    try {
+      return fs.readFileSync(path + element, 'utf8').toString().split('\n');
+    } catch (e) {
+    }
+  }).flatten().filter(function(word) {
     // skip short words
     if (word.length < 4) return;
     return word;
-  }).sortBy(function (word) {
+  }).uniq().sortBy(function (word) {
     // Sort alphabetically
     return word.toLowerCase();
   }).sortBy(function (word) {
@@ -70,47 +79,14 @@ function processWords(words, searchstr, phonetic) {
   }).value();
 }
 
-function findPuns(searchstr, maincallback) {
-  var phoneme = dm.process(searchstr)[0];
-  es.pipeline(
-    // db.createKeyStream(),
-    es.readArray(phonemes),
-    es.map(function (key, callback) {
-      var result = key.match(phoneme);
-      if (result == null) {
-        callback();
-      } else {
-        // console.log('found key', key, result);
-        callback(null, key);
-      }
-    }),
-    es.map(function (key, callback) {
-      // console.log('getting data for key', key);
-      fs.readFile(path + key, 'utf8', function(err, data) {
-        // console.log('got data for key', key, data)
-        data = data.toString().split('\n');
-        callback(null, data);
-      });
-    }),
-    es.writeArray(function (err, array){
-      // console.log('final array', array);
-      var result = processWords(array, searchstr, phoneme);
-      maincallback(result);
-    })
-  );
-}
-
 process.stdout.write("Type a word to find puns\n> ");
 es.pipeline(
   process.openStdin(),
   es.split(),
   es.map(function (searchstr, callback) {
-    console.log('Looking for phonetic string ' + dm.process(searchstr)[0] + '...');
-    findPuns(searchstr, function (result) {
-      console.log('Found ' + result.length + ' matches');
-      // write the result, appending a prompt
-      callback(null, result.join('\n') + '\n> ');
-    });
+    console.log('Looking for phonetic string ' + dm.process(searchstr)[0]);
+    // write the result, appending a prompt
+    callback(null, findPuns(searchstr).join('\n') + '\n> ');
   }),
   process.stdout
 );
