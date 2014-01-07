@@ -91,18 +91,12 @@ function processWords(words, searchstr, phonetic) {
 
 function findPuns(searchstr, maincallback) {
   var phoneme = dm.process(searchstr)[0];
+  var filtered = phonemes.filter(function (searchstr) {
+    return searchstr.match(phoneme);
+  });
   es.pipeline(
     // db.createKeyStream(),
-    es.readArray(phonemes),
-    es.map(function (key, callback) {
-      var result = key.match(phoneme);
-      if (result == null) {
-        callback();
-      } else {
-        // console.log('found key', key, result);
-        callback(null, key);
-      }
-    }),
+    es.readArray(filtered),
     es.map(function (key, callback) {
       // console.log('getting data for key', key);
       getWords(key, callback);
