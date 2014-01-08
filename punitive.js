@@ -1,7 +1,7 @@
 var natural = require('natural'),
   dm = natural.DoubleMetaphone;
 
-var fs = require('fs');
+var fs = require('graceful-fs');
 var path = 'index/';
 
 var es = require('event-stream');
