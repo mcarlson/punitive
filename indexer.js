@@ -1,7 +1,7 @@
 var natural = require('natural'),
   dm = natural.DoubleMetaphone;
 
-var fs = require('fs');
+var fs = require('graceful-fs');
 var path = 'index/';
 
 var rmdir = require('rimraf');
@@ -28,7 +28,11 @@ es.pipeline(
         // Add it to the list of phonemes found
         phonemes[phoneme] = true;
         // append the word to the list, by phoneme
-        fs.appendFileSync(path + phoneme, word + '\n');
+        fs.appendFile(path + phoneme, word + '\n', function(err) {
+          if (err) {
+            console.log(err);
+          }
+        });
         wordcounter++;
       }
     }
